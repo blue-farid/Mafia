@@ -1,3 +1,3 @@
 public interface Doctor {
-    void save(Player player);
+    boolean save(Player player);
 }

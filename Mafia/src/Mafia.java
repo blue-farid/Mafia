@@ -5,7 +5,11 @@ public class Mafia extends Player implements Shooter{
     }
 
     @Override
-    public void shot(Player player) {
-        player.setAlive(false);
+    public boolean shot(Player player) {
+        if (player instanceof Mafia) {
+            setAlive(false);
+            return true;
+        } else
+            return false;
     }
 }
