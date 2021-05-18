@@ -1,10 +1,12 @@
 public class Player {
-    private String name;
+    private final String name;
     private Vote vote;
     private boolean alive;
     private boolean onShot;
+    private boolean mute;
 
-    public Player() {
+    public Player(String name) {
+        this.name = name;
         alive = true;
         onShot = false;
     }
@@ -19,5 +21,13 @@ public class Player {
 
     public boolean isOnShot() {
         return onShot;
+    }
+
+    public boolean isMute() {
+        return mute;
+    }
+
+    public void setMute(boolean mute) {
+        this.mute = mute;
     }
 }
