@@ -6,9 +6,9 @@ public class Sniper extends Citizen implements Shooter {
         bullets = numberOfMafias - 2;
     }
     @Override
-    public void shot(Player player) {
+    public boolean shot(Player player) {
         if (bullets <= 0) {
-            return;
+            return false;
         }
         if (player instanceof Mafia) {
             bullets--;
@@ -16,5 +16,6 @@ public class Sniper extends Citizen implements Shooter {
         } else {
             this.setAlive(false);
         }
+        return true;
     }
 }

@@ -1,3 +1,3 @@
 public interface Shooter {
-    void shot(Player player);
+    boolean shot(Player player);
 }
