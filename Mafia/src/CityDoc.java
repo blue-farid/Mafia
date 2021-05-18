@@ -1,8 +1,13 @@
-public class CityDoc implements Doctor{
+public class CityDoc extends Citizen implements Doctor{
+
+    public CityDoc(String name) {
+        super(name);
+    }
+
     @Override
     public void save(Player player) {
         if (player instanceof Citizen) {
-            player.setOnShot(false);
+            player.setAlive(true);
         }
     }
 }
