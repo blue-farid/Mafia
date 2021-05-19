@@ -1,4 +1,4 @@
-public class LecterDoc extends Mafia implements Doctor {
+public class LecterDoc extends Mafia implements Saver {
 
     private boolean selfSaveChance = true;
     public LecterDoc(String name) {

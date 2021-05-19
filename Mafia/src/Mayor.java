@@ -1,9 +1,11 @@
-public class Mayor extends Citizen {
+public class Mayor extends Citizen implements Saver {
     public Mayor(String name) {
         super(name);
     }
 
-    public void cancelVotes(Player player) {
+    @Override
+    public boolean save(Player player) {
         player.setAlive(true);
+        return true;
     }
 }
