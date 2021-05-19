@@ -1,4 +1,4 @@
-public class CityDoc extends Citizen implements Doctor{
+public class CityDoc extends Citizen implements Saver {
 
     private boolean selfSaveChance = true;
 
