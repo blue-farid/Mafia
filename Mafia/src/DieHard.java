@@ -8,12 +8,13 @@ public class DieHard  extends Citizen {
         super(name);
     }
 
-    public Type recognition() {
+    public boolean inqury() {
         if (chances > 0) {
             chances--;
-            Player lastDead = God.getGod().getDeads().getLast();
-            return lastDead.getClass();
+            God.getGod().setInqury(true);
+            return true;
+        } else {
+            return false;
         }
-        return this.getClass();
     }
 }
