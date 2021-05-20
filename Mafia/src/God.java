@@ -1,5 +1,4 @@
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.LinkedList;
@@ -10,7 +9,8 @@ import java.util.concurrent.Executors;
 
 public class God {
     private static God god;
-    private LinkedList<Type> roles = new LinkedList<>();
+    private static int numberOfPlayers;
+    private LinkedList<Player> roles = new LinkedList<>();
     private LinkedList<Player> players = new LinkedList<>();
     private LinkedList<Player> deads = new LinkedList<>();
     private God() {}
@@ -30,7 +30,7 @@ public class God {
         System.out.println("*****************");
         System.out.println("\n" +
                 "first enter the number of player to start the game: ");
-        int numberOfPlayers = scanner.nextInt();
+        numberOfPlayers = scanner.nextInt();
         System.out.println("OK. \n" +
                 "you are the god of the game.\n" +
                 "please wait for the players to join...");
@@ -44,6 +44,8 @@ public class God {
                         (numberOfPlayers - counter) + "more player...");
                 pool.execute(new NewPlayerHandler(connection) );
             }
+            System.out.println("all of the players joined!");
+            God.class.notifyAll();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -56,23 +58,23 @@ public class God {
         deads.add(player);
         return players.remove(player);
     }
-    public Type randRole() {
+    public Player randRole() {
         Random random = new Random();
         return roles.get(random.nextInt(roles.size()));
     }
     public void createRoles() {
         // that for 10 players.
         roles.clear();
-        roles.add(Citizen.class);
-        roles.add(CityDoc.class);
-        roles.add(Detective.class);
-        roles.add(DieHard.class);
-        roles.add(GodFather.class);
-        roles.add(LecterDoc.class);
-        roles.add(Mafia.class);
-        roles.add(Mayor.class);
-        roles.add(Psychologist.class);
-        roles.add(Sniper.class);
+        roles.add(new Citizen(""));
+        roles.add(new CityDoc(""));
+        roles.add(new Detective(""));
+        roles.add(new DieHard(""));
+        roles.add(new GodFather(""));
+        roles.add(new LecterDoc(""));
+        roles.add(new Mafia(""));
+        roles.add(new Mayor(""));
+        roles.add(new Psychologist(""));
+        roles.add(new Sniper("" , numberOfPlayers));
     }
     public LinkedList<Player> getPlayers() {
         return players;
@@ -82,6 +84,9 @@ public class God {
         return deads;
     }
 
+    public static int getNumberOfPlayers() {
+        return numberOfPlayers;
+    }
 }
 
 class NewPlayerHandler implements Runnable {
@@ -101,11 +106,17 @@ class NewPlayerHandler implements Runnable {
         System.out.println();
         System.out.println("please enter a username:");
         String username = scanner.nextLine();
-        String role = God.getGod().randRole().getTypeName();
-        /*
-        do something with this and give a random role to player.
-         */
+        player = God.getGod().randRole();
         System.out.println("your role is: " + player.getClass().getName());
+        player.setName(username);
         God.getGod().addPlayer(player);
+        System.out.println("you has been added to the game.");
+        System.out.println("please wait for other players to join.");
+        try {
+            wait();
+        } catch (InterruptedException e) {
+            System.out.println("the game is on!");
+        }
+        
     }
 }

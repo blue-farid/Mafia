@@ -1,7 +1,7 @@
 import java.util.Objects;
 
 public class Player implements Comparable {
-    private final String name;
+    private String name;
     private int votes = 0;
     private boolean alive;
     private boolean mute;
@@ -47,6 +47,9 @@ public class Player implements Comparable {
         return votes;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
 
     @Override
     public int compareTo(Object o) {
