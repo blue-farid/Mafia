@@ -10,9 +10,13 @@ import java.util.concurrent.Executors;
 public class God {
     private static God god;
     private static int numberOfPlayers;
+    private boolean inqury = false;
     private LinkedList<Player> roles = new LinkedList<>();
     private LinkedList<Player> players = new LinkedList<>();
+    private LinkedList<Mafia> mafias = new LinkedList<>();
+    private LinkedList<Citizen> citizens = new LinkedList<>();
     private LinkedList<Player> deads = new LinkedList<>();
+
     private God() {}
 
     public  static God getGod() {
@@ -44,7 +48,10 @@ public class God {
                         (numberOfPlayers - counter) + "more player...");
                 pool.execute(new NewPlayerHandler(connection) );
             }
+            pool.shutdown();
             System.out.println("all of the players joined!");
+            God.getGod().fillMafias();
+            God.getGod().fillCitizens();
             God.class.notifyAll();
         } catch (IOException e) {
             e.printStackTrace();
@@ -60,7 +67,10 @@ public class God {
     }
     public Player randRole() {
         Random random = new Random();
-        return roles.get(random.nextInt(roles.size()));
+        int randIndex = random.nextInt(roles.size());
+        Player role = roles.get(randIndex);
+        roles.remove(randIndex);
+        return role;
     }
     public void createRoles() {
         // that for 10 players.
@@ -76,12 +86,45 @@ public class God {
         roles.add(new Psychologist(""));
         roles.add(new Sniper("" , numberOfPlayers));
     }
+    public void fillMafias() {
+        for (Player player: players) {
+            if (player instanceof Mafia) {
+                Mafia mafia = (Mafia) player;
+                mafias.add(mafia);
+            }
+        }
+    }
+    public void fillCitizens() {
+        for (Player player: players) {
+            if (player instanceof Citizen) {
+                Citizen citizen = (Citizen) player;
+                citizens.add(citizen);
+            }
+        }
+    }
+
+    public Player typeToObj(Player player) {
+        int index = players.indexOf(player);
+        return players.get(index);
+    }
     public LinkedList<Player> getPlayers() {
         return players;
     }
 
     public LinkedList<Player> getDeads() {
         return deads;
+    }
+
+    public LinkedList<Mafia> getMafias() {
+        return mafias;
+    }
+
+    public LinkedList<Citizen> getCitizens() {
+        return citizens;
+    }
+
+    public void setInqury(boolean inqury) {
+        this.inqury = inqury;
     }
 
     public static int getNumberOfPlayers() {
@@ -111,12 +154,11 @@ class NewPlayerHandler implements Runnable {
         player.setName(username);
         God.getGod().addPlayer(player);
         System.out.println("you has been added to the game.");
-        System.out.println("please wait for other players to join.");
+        System.out.println("please wait for other players to join...");
         try {
             wait();
         } catch (InterruptedException e) {
             System.out.println("the game is on!");
         }
-        
     }
 }

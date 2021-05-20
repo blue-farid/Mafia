@@ -28,13 +28,14 @@ public class Player implements Comparable {
         if (this == o) return true;
         if (!(o instanceof Player)) return false;
         Player player = (Player) o;
-        return Objects.equals(name, player.name);
+        return Objects.equals(this.getClass(), player.getClass());
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(name);
     }
+
     public void addVote() {
         votes++;
     }
@@ -47,6 +48,10 @@ public class Player implements Comparable {
         return votes;
     }
 
+    public String getName() {
+        return name;
+    }
+
     public void setName(String name) {
         this.name = name;
     }
@@ -55,5 +60,11 @@ public class Player implements Comparable {
     public int compareTo(Object o) {
         int compareVote = ((Player) o).getVotes();
         return this.votes-compareVote;
+    }
+
+    @Override
+    public String toString() {
+        return "Username: " + name + "\n" +
+                "Role: " + getClass().getName() + "\n";
     }
 }
