@@ -1,14 +1,22 @@
+import java.net.Socket;
 import java.util.Objects;
 
 public class Player implements Comparable {
+    private Socket socket;
     private String name;
-    private int votes = 0;
+    private int votes;
     private boolean alive;
     private boolean mute;
 
     public Player(String name) {
         this.name = name;
         alive = true;
+        votes = 0;
+        mute = false;
+    }
+
+    public void setSocket(Socket socket) {
+        this.socket = socket;
     }
 
     public void setAlive(boolean alive) {
@@ -67,4 +75,5 @@ public class Player implements Comparable {
         return "Username: " + name + "\n" +
                 "Role: " + getClass().getName() + "\n";
     }
+
 }
