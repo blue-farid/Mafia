@@ -9,6 +9,7 @@ import java.util.concurrent.Executors;
 
 public class God {
     private static God god;
+    private static Socket connection;
     private static int numberOfPlayers;
     private boolean inqury = false;
     private LinkedList<Player> roles = new LinkedList<>();
@@ -16,6 +17,8 @@ public class God {
     private LinkedList<Mafia> mafias = new LinkedList<>();
     private LinkedList<Citizen> citizens = new LinkedList<>();
     private LinkedList<Player> deads = new LinkedList<>();
+
+    private Night night = new Night();
 
     private God() {}
 
@@ -27,7 +30,7 @@ public class God {
     }
 
     public static void main(String[] args) {
-        God.getGod().createRoles();
+        getGod().createRoles();
         Scanner scanner = new Scanner(System.in);
         System.out.println("*****************");
         System.out.println("welcoming message.");
@@ -41,8 +44,9 @@ public class God {
         ExecutorService pool = Executors.newCachedThreadPool();
         int counter = 0;
         try (ServerSocket welcomingSocket = new ServerSocket(127)) {
+            System.out.println(getGod().roles.size());
             while (counter < numberOfPlayers) {
-                Socket connection = welcomingSocket.accept();
+                connection = welcomingSocket.accept();
                 counter++;
                 System.out.println("a player joined! just " +
                         (numberOfPlayers - counter) + "more player...");
@@ -56,6 +60,7 @@ public class God {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        getGod().getNight().run();
     }
 
     public boolean addPlayer(Player player) {
@@ -67,6 +72,7 @@ public class God {
     }
     public Player randRole() {
         Random random = new Random();
+        System.out.println(roles.size());
         int randIndex = random.nextInt(roles.size());
         Player role = roles.get(randIndex);
         roles.remove(randIndex);
@@ -130,6 +136,14 @@ public class God {
     public static int getNumberOfPlayers() {
         return numberOfPlayers;
     }
+
+    public Night getNight() {
+        return night;
+    }
+
+    public static Socket getConnection() {
+        return connection;
+    }
 }
 
 class NewPlayerHandler implements Runnable {
@@ -152,6 +166,7 @@ class NewPlayerHandler implements Runnable {
         player = God.getGod().randRole();
         System.out.println("your role is: " + player.getClass().getName());
         player.setName(username);
+        player.setSocket(connectionSocket);
         God.getGod().addPlayer(player);
         System.out.println("you has been added to the game.");
         System.out.println("please wait for other players to join...");

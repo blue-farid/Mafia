@@ -1,6 +1,5 @@
 import java.util.Scanner;
-
-public class Night implements Runnable {
+public class Night {
     private boolean firstNight = true;
     private static Night night;
 
@@ -12,7 +11,6 @@ public class Night implements Runnable {
             openEyes(mafia);
         }
     }
-    @Override
     public void run() {
         wakeUpMafias();
         openEyes(God.getGod().typeToObj(new CityDoc("")));
