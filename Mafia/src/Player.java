@@ -1,14 +1,17 @@
+import java.io.*;
 import java.util.Objects;
 
-public class Player implements Comparable {
+public class Player implements Comparable , Serializable , Runnable {
     private String name;
-    private int votes = 0;
+    private int votes;
     private boolean alive;
     private boolean mute;
 
     public Player(String name) {
         this.name = name;
         alive = true;
+        votes = 0;
+        mute = false;
     }
 
     public void setAlive(boolean alive) {
@@ -59,12 +62,17 @@ public class Player implements Comparable {
     @Override
     public int compareTo(Object o) {
         int compareVote = ((Player) o).getVotes();
-        return this.votes-compareVote;
+        return this.votes - compareVote;
     }
 
     @Override
     public String toString() {
         return "Username: " + name + "\n" +
                 "Role: " + getClass().getName() + "\n";
+    }
+
+    @Override
+    public void run() {
+
     }
 }
