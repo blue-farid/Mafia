@@ -1,4 +1,4 @@
-import java.io.IOException;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.LinkedList;
@@ -9,13 +9,18 @@ import java.util.concurrent.Executors;
 
 public class God {
     private static God god;
+    private static Socket connection;
     private static int numberOfPlayers;
+    private static boolean allPlayersJoined = false;
     private boolean inqury = false;
     private LinkedList<Player> roles = new LinkedList<>();
+    private LinkedList<Client> clients = new LinkedList<>();
     private LinkedList<Player> players = new LinkedList<>();
     private LinkedList<Mafia> mafias = new LinkedList<>();
     private LinkedList<Citizen> citizens = new LinkedList<>();
     private LinkedList<Player> deads = new LinkedList<>();
+
+    private Night night = new Night();
 
     private God() {}
 
@@ -26,8 +31,8 @@ public class God {
         return god;
     }
 
-    public static void main(String[] args) {
-        God.getGod().createRoles();
+    public synchronized static void main(String[] args) {
+        getGod().createRoles();
         Scanner scanner = new Scanner(System.in);
         System.out.println("*****************");
         System.out.println("welcoming message.");
@@ -42,22 +47,31 @@ public class God {
         int counter = 0;
         try (ServerSocket welcomingSocket = new ServerSocket(127)) {
             while (counter < numberOfPlayers) {
-                Socket connection = welcomingSocket.accept();
+                connection = welcomingSocket.accept();
                 counter++;
-                System.out.println("a player joined! just " +
-                        (numberOfPlayers - counter) + "more player...");
-                pool.execute(new NewPlayerHandler(connection) );
+                if ((numberOfPlayers - counter) != 0) {
+                    System.out.println("a player joined! just " +
+                            (numberOfPlayers - counter) + " more player...");
+                }
+                Thread t = new Thread(new NewPlayerHandler(connection));
+                pool.execute(t);
             }
-            pool.shutdown();
             System.out.println("all of the players joined!");
+            God.getGod().somePlayersAreNotReady();
+            System.out.println("all of the players are ready now!");
+            System.out.println("the game is on");
+            allPlayersJoined = true;
             God.getGod().fillMafias();
             God.getGod().fillCitizens();
-            God.class.notifyAll();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    public void addClient(Client client) {
+        clients.add(client);
+        addPlayer(client.getPlayer());
+    }
     public boolean addPlayer(Player player) {
         return players.add(player);
     }
@@ -103,22 +117,36 @@ public class God {
         }
     }
 
+    public void somePlayersAreNotReady() {
+        if (God.getGod().getPlayers().size() < numberOfPlayers) {
+            System.out.println("some players are not ready yet.");
+            while (God.getGod().getPlayers().size() < numberOfPlayers) {
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
     public Player typeToObj(Player player) {
         int index = players.indexOf(player);
         return players.get(index);
-    }
-    public LinkedList<Player> getPlayers() {
-        return players;
     }
 
     public LinkedList<Player> getDeads() {
         return deads;
     }
 
+
     public LinkedList<Mafia> getMafias() {
         return mafias;
     }
 
+    public static boolean isAllPlayersJoined() {
+        return allPlayersJoined;
+    }
     public LinkedList<Citizen> getCitizens() {
         return citizens;
     }
@@ -130,35 +158,45 @@ public class God {
     public static int getNumberOfPlayers() {
         return numberOfPlayers;
     }
+
+    public LinkedList<Player> getPlayers() {
+        return players;
+    }
+
+    public Night getNight() {
+        return night;
+    }
+
+    public static Socket getConnection() {
+        return connection;
+    }
 }
 
-class NewPlayerHandler implements Runnable {
-    private Socket connectionSocket;
-    private Player player;
-
-    public NewPlayerHandler(Socket connectionSocket) {
-        this.connectionSocket = connectionSocket;
+class NewPlayerHandler extends Thread {
+    private Socket client;
+    private InputStream inputStream;
+    private OutputStream outputStream;
+    public NewPlayerHandler(Socket client) {
+        this.client = client;
     }
 
     @Override
     public void run() {
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("*****************");
-        System.out.println("welcoming message.");
-        System.out.println("*****************");
-        System.out.println();
-        System.out.println("please enter a username:");
-        String username = scanner.nextLine();
-        player = God.getGod().randRole();
-        System.out.println("your role is: " + player.getClass().getName());
-        player.setName(username);
-        God.getGod().addPlayer(player);
-        System.out.println("you has been added to the game.");
-        System.out.println("please wait for other players to join...");
         try {
-            wait();
+            inputStream = client.getInputStream();
+            outputStream = client.getOutputStream();
+            ObjectOutputStream out = new ObjectOutputStream(outputStream);
+            out.writeObject(God.getGod().randRole());
+            ObjectInputStream in = new ObjectInputStream(inputStream);
+            God.getGod().addClient((Client) in.readObject());
+            while (!God.isAllPlayersJoined()) {
+                Thread.sleep(5000);
+            }
+            out.writeObject("all of the players joined!");
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
         } catch (InterruptedException e) {
-            System.out.println("the game is on!");
+            e.printStackTrace();
         }
     }
 }
