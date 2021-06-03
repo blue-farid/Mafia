@@ -6,33 +6,38 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Client implements Runnable , Serializable {
-    private String name;
     private Player player;
-
+    private String name;
+    private ObjectInputStream in;
+    private ObjectOutputStream out;
+    private ExecutorService pool = Executors.newCachedThreadPool();
     @Override
     public void run() {
         Scanner scanner = new Scanner(System.in);
-        try (Socket client = new Socket("127.0.0.1" , 127)) {
-            InputStream inputStream = client.getInputStream();
-            OutputStream outputStream = client.getOutputStream();
-            ObjectOutputStream out = new ObjectOutputStream(outputStream);
+        try {
+            Socket client = new Socket("127.0.0.1" , 127);
+            out = new ObjectOutputStream(client.getOutputStream());
+            in = new ObjectInputStream(client.getInputStream());
             System.out.println("*****************");
             System.out.println("welcoming message.");
             System.out.println("*****************");
             System.out.println();
             System.out.println("please enter a username:");
             String username = scanner.nextLine();
-            ObjectInputStream in = new ObjectInputStream(inputStream);
             player = (Player) in.readObject();
             System.out.println("your role is: " + player.getClass().getName());
             name = username;
             player.setName(username);
-            out.writeObject(this);
+            out.writeObject(player);
             System.out.println("you has been added to the game.");
             System.out.println("please wait for other players to join...");
             String wait = (String) in.readObject();
             System.out.println(wait);
+            God.getGod().setGod((God) in.readObject());
             System.out.println("the game is on!");
+            // get ready for reading
+            pool.execute(new ClientReader(this));
+//            pool.execute(new Writer(this));
         } catch (UnknownHostException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -46,8 +51,15 @@ public class Client implements Runnable , Serializable {
         return player;
     }
 
+    public ObjectInputStream getObjectInputStream() {
+        return in;
+    }
+
+    public ObjectOutputStream getObjectOutputStream() {
+        return out;
+    }
+
     public static void main(String[] args) {
-        ExecutorService pool = Executors.newCachedThreadPool();
-        pool.execute(new Client());
+        new Client().run();
     }
 }
