@@ -1,6 +1,7 @@
 public class LecterDoc extends Mafia implements Saver {
 
     private boolean selfSaveChance = true;
+    private boolean firstWakeup = true;
     public LecterDoc(String name) {
         super(name);
     }
@@ -18,5 +19,13 @@ public class LecterDoc extends Mafia implements Saver {
             player.setAlive(true);
         }
         return true;
+    }
+
+    public boolean isFirstWakeup() {
+        return firstWakeup;
+    }
+
+    public void setFirstWakeup(boolean firstWakeup) {
+        this.firstWakeup = firstWakeup;
     }
 }

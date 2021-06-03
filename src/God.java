@@ -13,14 +13,12 @@ public class God implements Serializable {
     private int numberOfPlayers;
     private static boolean allPlayersJoined = false;
     private boolean inqury = false;
+    private boolean firstNight = true;
     private LinkedList<Player> roles = new LinkedList<>();
     private LinkedList<Player> players = new LinkedList<>();
     private LinkedList<Mafia> mafias = new LinkedList<>();
     private LinkedList<Citizen> citizens = new LinkedList<>();
     private LinkedList<Player> deads = new LinkedList<>();
-
-    private Night night = new Night();
-
     public static God getGod() {
         if (god == null) {
             god = new God();
@@ -31,7 +29,6 @@ public class God implements Serializable {
         this.god = god;
     }
     public static void main(String[] args) {
-        God.getGod().getNight().setFirstNight(true);
         Scanner scanner = new Scanner(System.in);
         System.out.println("*****************");
         System.out.println("welcoming message.");
@@ -68,8 +65,10 @@ public class God implements Serializable {
             allPlayersJoined = true;
             Thread.sleep(5000);
             getGod().wakeUpCommands();
-            getGod().getNight().setFirstNight(false);
-            ChatroomServer.getChatroomServer().start();
+            getGod().setFirstNight(false);
+//            ChatroomServer.getChatroomServer().start();
+            getGod().wakeUpCommands();
+            Thread.sleep(30000);
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
@@ -161,7 +160,7 @@ public class God implements Serializable {
         getGod().commandLine(command , new CityDoc(""));
         getGod().commandLine(command , new Mayor(""));
         getGod().commandLine(command , new Sniper("", numberOfPlayers));
-        if (!getGod().getNight().isFirstNight()) {
+        if (!getGod().isFirstNight()) {
             getGod().commandLine(command, new LecterDoc(""));
         }
         getGod().commandLine(command, new Detective(""));
@@ -175,10 +174,11 @@ public class God implements Serializable {
     }
 
     public void wakeUpMafias() throws IOException, ClassNotFoundException {
-        if (God.getGod().getNight().isFirstNight()) {
-            GodFather godFather = null;
-            LecterDoc lecterDoc = null;
-            Mafia mafia2 = null;
+        GodFather godFather = null;
+        LecterDoc lecterDoc = null;
+        Mafia mafia2 = null;
+        ExecutorService pool = Executors.newCachedThreadPool();
+        if (getGod().isFirstNight()) {
             String command = "WakeUp";
             for (Mafia mafia : getGod().mafias) {
                 getGod().playerToClient(mafia).getObjectOutputStream().writeObject(command);
@@ -188,21 +188,25 @@ public class God implements Serializable {
                     }
                 }
             }
-            getGod().playerToClient(godFather).getObjectInputStream().readObject();
-            for (Mafia mafia : getGod().mafias) {
-                getGod().playerToClient(mafia).getObjectOutputStream().flush();
-            }
         } else {
             String command = "WakeUp";
             for (Mafia mafia : getGod().mafias) {
+                if (mafias.contains(new GodFather(""))) {
+                    if (mafia instanceof GodFather)
+                        godFather = (GodFather) mafia;
+                }
                 NewPlayerHandler newPlayerHandler = getGod().playerToClient(mafia);
-                newPlayerHandler.getObjectOutputStream().writeObject(command);
-                Network.sendToMafias(newPlayerHandler.getObjectInputStream().readObject());
-            }
-            for (Mafia mafia : getGod().mafias) {
-                getGod().playerToClient(mafia).getObjectOutputStream().flush();
+                if (!(mafia instanceof GodFather)) {
+                    pool.execute(new MafiaWakeUpHandler(newPlayerHandler));
+                    newPlayerHandler.getObjectOutputStream().writeObject(command);
+                } else {
+                    newPlayerHandler.getObjectOutputStream().writeObject(command);
+                    new MafiaWakeUpHandler(newPlayerHandler).run();
+                }
             }
         }
+//        getGod().playerToClient(godFather).getObjectInputStream().readObject();
+        pool.shutdownNow();
     }
     public void updateGod() {
         for (NewPlayerHandler newPlayerHandler: Network.newPlayerHandlers) {
@@ -270,8 +274,12 @@ public class God implements Serializable {
         return players;
     }
 
-    public Night getNight() {
-        return night;
+    public boolean isFirstNight() {
+        return firstNight;
+    }
+
+    public void setFirstNight(boolean firstNight) {
+        this.firstNight = firstNight;
     }
 
     public static void cls()
@@ -284,6 +292,32 @@ public class God implements Serializable {
                 System.out.print("\033\143");
             }
         } catch (IOException | InterruptedException ex) {}
+    }
+
+    private class MafiaWakeUpHandler implements Runnable {
+        private NewPlayerHandler newPlayerHandler;
+
+        public MafiaWakeUpHandler(NewPlayerHandler newPlayerHandler) {
+            this.newPlayerHandler = newPlayerHandler;
+        }
+
+        public Object reader() {
+            try {
+                return newPlayerHandler.getObjectInputStream().readObject();
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        public void run() {
+            for (Mafia mafia: God.getGod().mafias) {
+                Network.sendToMafias(reader());
+            }
+        }
     }
 }
 
@@ -334,7 +368,6 @@ class NewPlayerHandler extends Thread implements Serializable{
     public ObjectOutputStream getObjectOutputStream() {
         return out;
     }
-
 
     public Socket getSocket() {
         return socket;
