@@ -3,8 +3,8 @@ public class Sniper extends Citizen implements Shooter {
 
     public Sniper(String name , int numberOfPlayers) {
         super(name);
-        int numberOfMafias = (int) Math.ceil((double) numberOfPlayers / 3.0);
-        this.bullets = numberOfMafias - 2;
+        double numberOfMafias = Math.floor((double) numberOfPlayers / 3.0);
+        this.bullets = (int) numberOfMafias - 2;
     }
     @Override
     public boolean shot(Player player) {

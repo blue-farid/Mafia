@@ -13,7 +13,11 @@ public class Player implements Comparable , Serializable , Runnable {
         votes = 0;
         mute = false;
     }
-
+    public Player() {
+        alive = true;
+        votes = 0;
+        mute = false;
+    }
     public void setAlive(boolean alive) {
         this.alive = alive;
     }
