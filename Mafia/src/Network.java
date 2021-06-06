@@ -12,5 +12,13 @@ public class Network {
             }
         }
     }
-
+    public static void sendToAll(Object obj) {
+        for (NewPlayerHandler newPlayerHandler: newPlayerHandlers) {
+            try {
+                newPlayerHandler.getObjectOutputStream().writeObject(obj);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }

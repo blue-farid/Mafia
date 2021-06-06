@@ -1,12 +1,15 @@
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.GenericSignatureFormatError;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class ClientReader implements Runnable , Reader {
     private Client client;
-
+    private Thread writer;
+    private Thread vote;
+    private Scanner writerScanner;
     public ClientReader(Client client) {
         this.client = client;
     }
@@ -27,13 +30,33 @@ public class ClientReader implements Runnable , Reader {
             pool.execute(new OpenEyes(client));
         } else if (command.equals(God.getGod())) {
             updateGod((God) command);
-        } else {
+        } else if (command.equals("Day")) {
+            System.out.println("Day!");
+            try {
+                client.getObjectOutputStream().writeObject("Day");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            writerScanner = new Scanner(System.in);
+            writer = new Thread(new Writer(client,writerScanner));
+            writer.start();
+        } else if (command.equals("CloseWriter")) {
+            writer.interrupt();
+            writerScanner.close();
+        } else if (command.equals("Vote")) {
+            vote = new Thread(new Voting(client));
+            vote.start();
+        } else if (command.equals("CloseVote")) {
+            vote.interrupt();
+        }
+        else {
             System.out.println(command);
         }
     }
 
     public void updateGod(God god) {
         God.getGod().setGod(god);
+        System.out.println(God.getGod().getPlayers().size());
     }
 
     @Override
@@ -218,6 +241,33 @@ public class ClientReader implements Runnable , Reader {
                     }
                 }
             }
+        }
+    }
+    private class Voting implements Runnable {
+
+        private Client client;
+
+        public Voting(Client client) {
+            this.client = client;
+        }
+        @Override
+        public void run() {
+            vote();
+        }
+
+        public void vote() {
+            Scanner scanner = new Scanner(System.in);
+            System.out.println("Vote: ");
+            Display.displayPlayers();
+            int choose = scanner.nextInt();
+            Player target = God.getGod().getPlayers().get(--choose);
+            Vote vote = new Vote(client.getPlayer(),target);
+            try {
+                client.getObjectOutputStream().writeObject(vote);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            System.out.println("Wait for other players to vote");
         }
     }
 }
