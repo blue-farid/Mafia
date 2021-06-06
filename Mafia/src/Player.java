@@ -26,6 +26,10 @@ public class Player implements Comparable , Serializable , Runnable {
         return mute;
     }
 
+    public boolean isAlive() {
+        return alive;
+    }
+
     public void setMute(boolean mute) {
         this.mute = mute;
     }

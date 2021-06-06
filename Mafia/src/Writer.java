@@ -3,18 +3,19 @@ import java.util.Scanner;
 
 public class Writer implements Runnable{
     private Client client;
-
-    public Writer(Client client) {
+    private Scanner scanner;
+    public Writer(Client client , Scanner scanner) {
         this.client = client;
+        this.scanner = scanner;
     }
 
     @Override
-    public synchronized void run() {
+    public void run() {
         Scanner scanner = new Scanner(System.in);
-        while (true) {
+        while (!Thread.interrupted()) {
             String text = scanner.nextLine();
             try {
-                client.getObjectOutputStream().writeObject(client.getPlayer().getName() + ": " + text);
+                client.getObjectOutputStream().writeObject(text);
             } catch (IOException e) {
                 e.printStackTrace();
             }

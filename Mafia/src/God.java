@@ -1,4 +1,5 @@
 import java.io.*;
+import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.LinkedList;
@@ -15,7 +16,8 @@ public class God implements Serializable {
     private boolean waiting = true;
     private boolean inqury = false;
     private boolean firstNight = true;
-    private Integer numberOfMafiasWhoVotes = 0;
+    private int numberOfMafiasWhoVotes = 0;
+    private int numberOfPlayersWhoVotes= 0;
     private LinkedList<Player> roles = new LinkedList<>();
     private LinkedList<Player> players = new LinkedList<>();
     private LinkedList<Mafia> mafias = new LinkedList<>();
@@ -33,6 +35,7 @@ public class God implements Serializable {
     public void setGod(God god) {
         this.god = god;
     }
+
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         System.out.println("*****************");
@@ -73,10 +76,26 @@ public class God implements Serializable {
             getGod().setFirstNight(false);
             getGod().updateGod(); //kar nemikone.
             Thread.sleep(1000);
+            ExecutorService serverReader = Executors.newCachedThreadPool();
             for (NewPlayerHandler newPlayerHandler: Network.newPlayerHandlers) {
-                pool.execute(new ServerReader(newPlayerHandler));
+                serverReader.execute(new ServerReader(newPlayerHandler));
             }
-            getGod().wakeUpCommands();
+            while (true) {
+//                getGod().wakeUpCommands();
+//                getGod().removeDeads();
+                Network.sendToAll("Day");
+                serverReader.shutdownNow();
+                ChatroomServer.getChatroomServer().start();
+                serverReader = Executors.newCachedThreadPool();
+                for (NewPlayerHandler newPlayerHandler: Network.newPlayerHandlers) {
+                    serverReader.execute(new ServerReader(newPlayerHandler));
+                }
+                Network.sendToAll("CloseWriter");
+                Network.sendToAll("Vote");
+                Thread.sleep(30000);
+                Network.sendToAll("CloseVote");
+                break;
+            }
         } catch (IOException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
@@ -155,7 +174,7 @@ public class God implements Serializable {
         }
         return null;
     }
-    public void commandLine(Object command , Player player1) throws IOException, ClassNotFoundException {
+    public void commandLine(Object command , Player player1) throws IOException {
         Player player = getGod().typeToObj(player1);
         ObjectOutputStream out = getGod().playerToClient(player).getObjectOutputStream();
         out.flush();
@@ -206,9 +225,7 @@ public class God implements Serializable {
             }
         }
     }
-    public void waitForMafia() {
 
-    }
     public void updateGod() {
         for (NewPlayerHandler newPlayerHandler: Network.newPlayerHandlers) {
             try {
@@ -218,7 +235,13 @@ public class God implements Serializable {
             }
         }
     }
-
+    public void removeDeads() {
+        for (Player player: players) {
+            if (!player.isAlive()) {
+                removePlayer(player);
+            }
+        }
+    }
     public void sortMafias() {
         GodFather godFather = null;
         LecterDoc lecterDoc = null;
@@ -270,6 +293,14 @@ public class God implements Serializable {
 
     public int getNumberOfPlayers() {
         return numberOfPlayers;
+    }
+
+    public Integer getNumberOfPlayersWhoVotes() {
+        return numberOfPlayersWhoVotes;
+    }
+
+    public void setNumberOfPlayersWhoVotes(int numberOfPlayersWhoVotes) {
+        this.numberOfPlayersWhoVotes = numberOfPlayersWhoVotes;
     }
 
     public void setNumberOfPlayers(int numberOfPlayers) {

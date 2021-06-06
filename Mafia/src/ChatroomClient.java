@@ -12,8 +12,7 @@ public class ChatroomClient {
     }
 
     public void start() {
-        ExecutorService pool = Executors.newCachedThreadPool();
-        pool.execute(new Writer(client));
-        pool.execute(new ClientReader(client));
+//        new Writer(client);
+//        pool.execute(new ClientReader(client));
     }
 }
