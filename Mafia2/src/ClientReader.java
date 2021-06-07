@@ -1,0 +1,146 @@
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.lang.reflect.GenericSignatureFormatError;
+import java.util.Scanner;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+public class ClientReader implements Runnable , Reader {
+    private Client client;
+    private Thread vote;
+    public ClientReader(Client client) {
+        this.client = client;
+    }
+
+    public Object reader() {
+        try {
+            return client.getObjectInputStream().readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    @Override
+    public void commandLine(Object command) {
+        ExecutorService pool = Executors.newCachedThreadPool();
+        if (command.equals("WakeUp")) {
+            pool.execute(new OpenEyes(client));
+        } else if(command.equals("CloseChat")) {
+            try {
+                client.getObjectOutputStream().writeObject(command);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else if (command.equals("Day!")) {
+            try {
+                client.getObjectOutputStream().writeObject(command);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            System.out.println(command);
+        }
+        else {
+            System.out.println(command);
+        }
+    }
+
+
+    @Override
+    public void run() {
+        while (true) {
+            commandLine(reader());
+        }
+    }
+
+    private class OpenEyes implements Runnable {
+        private Client client;
+
+        public OpenEyes(Client client) {
+            this.client = client;
+        }
+
+        @Override
+        public void run() {
+            try {
+                openEyes();
+            } catch (IOException | ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+
+        private void openEyes() throws IOException, ClassNotFoundException {
+            Player player = client.getPlayer();
+            ObjectOutputStream out = client.getObjectOutputStream();
+            System.out.println();
+            if (client.isFirstNight()) {
+                client.setFirstNight(false);
+                System.out.println("First Night!");
+                System.out.println();
+                if (player instanceof Mafia) {
+                    for (Mafia mafia: God.getGod().getMafias()) {
+                        System.out.println(mafia);
+                    }
+                } else if (player instanceof Mayor) {
+                    //find doc.
+                    System.out.println(God.getGod().typeToObj(new CityDoc("")));
+                    System.out.println(player);
+                } else if (player instanceof CityDoc) {
+                    System.out.println(God.getGod().typeToObj(new Mayor("")));
+                    System.out.println(player);
+                } else {
+                    System.out.println(player);
+                }
+            } else {
+                try {
+                    System.out.println("Night!");
+                    System.out.println();
+                    if (player instanceof LecterDoc) {
+                        LecterDoc lecterDoc = (LecterDoc) player;
+                        if (!lecterDoc.isFirstWakeup()) {
+                            System.out.println("choose a Mafia to save.");
+                            out.writeObject("Display.LecterDoc");
+                            Thread.sleep(1000);
+                        } else {
+                            System.out.println("choose a player to kill.");
+                            out.writeObject("Display.Citizens");
+                        }
+                    } else if (player instanceof Mafia) {
+                        System.out.println("choose a player to kill.");
+                        out.writeObject("Display.Citizens");
+                    } else if (player instanceof CityDoc) {
+                        System.out.println("choose a Player to save.");
+                        out.writeObject("Display.Players");
+                    } else if (player instanceof Detective) {
+                        System.out.println("Choose a player to detect.");
+                        out.writeObject("Display.Players");
+                    } else if (player instanceof Sniper) {
+                        out.writeObject("sniper");
+                    } else if (player instanceof Psychologist) {
+                        out.writeObject("psychologist");
+                    } else if (player instanceof DieHard) {
+                        out.writeObject("dieHard");
+                    } else {
+                        System.out.println(player);
+                        out.writeObject("NotWait");
+                    }
+
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } finally {
+                    if (!(player.equals(new Mafia("")) || player.equals(new GodFather("")))) {
+                        if (player.equals(new LecterDoc(""))) {
+                            LecterDoc lecterDoc = (LecterDoc) player;
+                            if (lecterDoc.isFirstWakeup()) {
+                                lecterDoc.setFirstWakeup(false);
+                                return;
+                            } else {
+                                lecterDoc.setFirstWakeup(true);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
