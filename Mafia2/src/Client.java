@@ -1,6 +1,6 @@
 import java.io.*;
 import java.net.Socket;
-import java.net.UnknownHostException;
+import java.net.SocketException;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -10,10 +10,9 @@ import java.util.concurrent.Executors;
  */
 public class Client implements Runnable , Serializable {
     private Player player;
-    private String name;
     private ObjectInputStream in;
     private ObjectOutputStream out;
-    private ExecutorService pool = Executors.newCachedThreadPool();
+    private final ExecutorService pool = Executors.newCachedThreadPool();
     private boolean firstNight = true;
     @Override
     public void run() {
@@ -30,11 +29,20 @@ public class Client implements Runnable , Serializable {
             System.out.println("welcoming message.");
             System.out.println("*****************");
             System.out.println();
-            System.out.println("please enter a username:");
-            String username = scanner.nextLine();
+            System.out.println("when you ready, enter your username to start:");
+            String username = "";
+            while (true) {
+                username = scanner.nextLine();
+                out.writeObject(username);
+                boolean state = (Boolean) in.readObject();
+                if (state) {
+                    break;
+                } else {
+                    System.out.println("this username is not available. choose another!");
+                }
+            }
             player = (Player) in.readObject();
             System.out.println("your role is: " + player.getClass().getName());
-            name = username;
             player.setName(username);
             out.writeObject(player);
             System.out.println("you has been added to the game.");
@@ -46,11 +54,9 @@ public class Client implements Runnable , Serializable {
             // get ready for reading
             pool.execute(new ClientReader(this));
             pool.execute(new Writer(this));
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
+        } catch (SocketException e) {
+            System.exit(0);
+        } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
     }

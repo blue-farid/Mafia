@@ -1,4 +1,6 @@
 import java.io.IOException;
+import java.net.SocketException;
+import java.util.ConcurrentModificationException;
 import java.util.LinkedList;
 import java.util.concurrent.ExecutorService;
 
@@ -35,6 +37,12 @@ public class Network {
         for (NewPlayerHandler newPlayerHandler: newPlayerHandlers) {
             try {
                 newPlayerHandler.getObjectOutputStream().writeObject(obj);
+            } catch (ConcurrentModificationException | SocketException e) {
+                try {
+                    Network.exit(newPlayerHandler);
+                } catch (IOException ioException) {
+                    ioException.printStackTrace();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }

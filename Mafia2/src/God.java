@@ -1,6 +1,7 @@
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -59,7 +60,21 @@ public class God implements Serializable {
         System.out.println("*****************");
         System.out.println("\n" +
                 "first enter the number of player to start the game: ");
-        getGod().setNumberOfPlayers(scanner.nextInt());
+        int a = 0;
+        while (true) {
+            try {
+                a = scanner.nextInt();
+                if (a > 2 && a < 11) {
+                    break;
+                } else {
+                    System.out.println("the number of player should be between 3 to 10");
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("please enter an Integer!");
+                scanner.nextLine();
+            }
+        }
+        getGod().setNumberOfPlayers(a);
         getGod().createRoles();
         System.out.println("OK. \n" +
                 "you are the god of the game.\n" +
@@ -176,7 +191,6 @@ public class God implements Serializable {
      * Create roles.
      */
     public void createRoles() {
-        // that for 10 players.
         roles.clear();
         roles.add(new Citizen(""));
         roles.add(new CityDoc(""));
@@ -188,6 +202,25 @@ public class God implements Serializable {
         roles.add(new Mayor(""));
         roles.add(new Psychologist(""));
         roles.add(new Sniper("" , numberOfPlayers));
+        if (numberOfPlayers < 10)
+            roles.remove(new Citizen(""));
+        if (numberOfPlayers < 9)
+            roles.remove(new Mafia(""));
+        if (numberOfPlayers < 8)
+            roles.remove(new Psychologist(""));
+        if (numberOfPlayers < 7)
+            roles.remove(new Mayor(""));
+        if (numberOfPlayers < 6)
+            roles.remove(new LecterDoc(""));
+            roles.remove(new Detective("")); /* detective doesn't help
+                                                    in the game we just 1 mafia
+                                                    and that is GodFather!
+                                                    */
+            roles.add(new Mayor(""));
+        if (numberOfPlayers < 5)
+            roles.remove(new DieHard(""));
+        if (numberOfPlayers < 4)
+            roles.remove(new Sniper("",numberOfPlayers));
     }
 
     /**
@@ -295,8 +328,12 @@ public class God implements Serializable {
      * @return the player
      */
     public Player typeToObj(Player player) {
-        int index = players.indexOf(player);
-        return players.get(index);
+        try {
+            int index = players.indexOf(player);
+            return players.get(index);
+        } catch (IndexOutOfBoundsException e) {
+            return null;
+        }
     }
 
     /**
@@ -650,14 +687,30 @@ class NewPlayerHandler extends Thread implements Serializable{
         this.socket = socket;
     }
 
+    private synchronized boolean checkUserNameRepetition(String username) {
+        for (Player player: God.getGod().getPlayers()) {
+            if (username.equals(player.getName())) {
+                return false;
+            }
+        }
+        return true;
+    }
     @Override
     public void run() {
         try {
             OutputStream outputStream = socket.getOutputStream();
             out = new ObjectOutputStream(outputStream);
-            out.writeObject(God.getGod().randRole());
             InputStream inputStream = socket.getInputStream();
             in = new ObjectInputStream(inputStream);
+            while (true) {
+                String username = (String) in.readObject();
+                boolean state = checkUserNameRepetition(username);
+                out.writeObject(state);
+                if (state) {
+                    break;
+                }
+            }
+            out.writeObject(God.getGod().randRole());
             player = (Player) in.readObject();
             God.getGod().addPlayer(player);
             name = player.getName();
@@ -667,6 +720,8 @@ class NewPlayerHandler extends Thread implements Serializable{
             God.getGod().somePlayersAreNotReady();
             out.writeObject("all of the players joined!");
             out.writeObject(God.getGod());
+        } catch (SocketException e) {
+            return;
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
