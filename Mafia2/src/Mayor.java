@@ -1,4 +1,12 @@
+/**
+ * The type Mayor.
+ */
 public class Mayor extends Citizen implements Saver {
+    /**
+     * Instantiates a new Mayor.
+     *
+     * @param name the name
+     */
     public Mayor(String name) {
         super(name);
     }

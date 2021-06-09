@@ -1,6 +1,15 @@
+/**
+ * The type Sniper.
+ */
 public class Sniper extends Citizen implements Shooter {
-    private int bullets; // =  number of mafias - 2
+    private int bullets; // =  number of mafias - 1
 
+    /**
+     * Instantiates a new Sniper.
+     *
+     * @param name            the name
+     * @param numberOfPlayers the number of players
+     */
     public Sniper(String name , int numberOfPlayers) {
         super(name);
         double numberOfMafias = Math.floor((double) numberOfPlayers / 3.0);

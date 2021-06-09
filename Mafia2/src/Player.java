@@ -1,35 +1,68 @@
 import java.io.*;
 import java.util.Objects;
 
-public class Player implements Comparable , Serializable , Runnable {
+/**
+ * The type Player.
+ */
+public class Player implements Comparable , Serializable {
     private String name;
     private int votes;
     private boolean alive;
     private boolean mute;
 
+    /**
+     * Instantiates a new Player.
+     *
+     * @param name the name
+     */
     public Player(String name) {
         this.name = name;
         alive = true;
         votes = 0;
         mute = false;
     }
+
+    /**
+     * Instantiates a new Player.
+     */
     public Player() {
         alive = true;
         votes = 0;
         mute = false;
     }
+
+    /**
+     * Sets alive.
+     *
+     * @param alive the alive
+     */
     public void setAlive(boolean alive) {
         this.alive = alive;
     }
 
+    /**
+     * Is mute boolean.
+     *
+     * @return the boolean
+     */
     public boolean isMute() {
         return mute;
     }
 
+    /**
+     * Is alive boolean.
+     *
+     * @return the boolean
+     */
     public boolean isAlive() {
         return alive;
     }
 
+    /**
+     * Sets mute.
+     *
+     * @param mute the mute
+     */
     public void setMute(boolean mute) {
         this.mute = mute;
     }
@@ -47,22 +80,43 @@ public class Player implements Comparable , Serializable , Runnable {
         return Objects.hash(name);
     }
 
+    /**
+     * Add vote.
+     */
     public void addVote() {
         votes++;
     }
 
+    /**
+     * Reset votes.
+     */
     public void resetVotes() {
         votes = 0;
     }
 
+    /**
+     * Gets votes.
+     *
+     * @return the votes
+     */
     public int getVotes() {
         return votes;
     }
 
+    /**
+     * Gets name.
+     *
+     * @return the name
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Sets name.
+     *
+     * @param name the name
+     */
     public void setName(String name) {
         this.name = name;
     }
@@ -77,10 +131,5 @@ public class Player implements Comparable , Serializable , Runnable {
     public String toString() {
         return "Username: " + name + "\n" +
                 "Role: " + getClass().getName() + "\n";
-    }
-
-    @Override
-    public void run() {
-
     }
 }

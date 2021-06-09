@@ -1,12 +1,20 @@
-import org.w3c.dom.Node;
-
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 
+/**
+ * The type Server reader.
+ */
 public class ServerReader implements Reader , Runnable {
-    NewPlayerHandler newPlayerHandler;
+    /**
+     * The New player handler.
+     */
+    private NewPlayerHandler newPlayerHandler;
 
 
+    /**
+     * Instantiates a new Server reader.
+     *
+     * @param newPlayerHandler the new player handler
+     */
     public ServerReader(NewPlayerHandler newPlayerHandler) {
         this.newPlayerHandler = newPlayerHandler;
     }
@@ -24,6 +32,12 @@ public class ServerReader implements Reader , Runnable {
         }
         return null;
     }
+
+    /**
+     * Gets num.
+     *
+     * @return the num
+     */
     public int getNum() {
         while (true) {
             try {

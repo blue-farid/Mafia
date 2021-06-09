@@ -5,6 +5,9 @@ import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * The type Client.
+ */
 public class Client implements Runnable , Serializable {
     private Player player;
     private String name;
@@ -52,26 +55,56 @@ public class Client implements Runnable , Serializable {
         }
     }
 
+    /**
+     * Gets player.
+     *
+     * @return the player
+     */
     public Player getPlayer() {
         return player;
     }
 
+    /**
+     * Gets object input stream.
+     *
+     * @return the object input stream
+     */
     public ObjectInputStream getObjectInputStream() {
         return in;
     }
 
+    /**
+     * Gets object output stream.
+     *
+     * @return the object output stream
+     */
     public ObjectOutputStream getObjectOutputStream() {
         return out;
     }
 
+    /**
+     * Is first night boolean.
+     *
+     * @return the boolean
+     */
     public boolean isFirstNight() {
         return firstNight;
     }
 
+    /**
+     * Sets first night.
+     *
+     * @param firstNight the first night
+     */
     public void setFirstNight(boolean firstNight) {
         this.firstNight = firstNight;
     }
 
+    /**
+     * The entry point of application.
+     *
+     * @param args the input arguments
+     */
     public static void main(String[] args) {
         new Client().run();
     }

@@ -1,14 +1,21 @@
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.lang.reflect.GenericSignatureFormatError;
 import java.net.SocketException;
-import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * The type Client reader.
+ */
 public class ClientReader implements Runnable , Reader {
     private Client client;
+
+    /**
+     * Instantiates a new Client reader.
+     *
+     * @param client the client
+     */
     public ClientReader(Client client) {
         this.client = client;
     }
@@ -67,6 +74,11 @@ public class ClientReader implements Runnable , Reader {
     private class OpenEyes implements Runnable {
         private Client client;
 
+        /**
+         * Instantiates a new Open eyes.
+         *
+         * @param client the client
+         */
         public OpenEyes(Client client) {
             this.client = client;
         }
