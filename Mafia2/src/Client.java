@@ -14,6 +14,8 @@ public class Client implements Runnable , Serializable {
     private ObjectOutputStream out;
     private final ExecutorService pool = Executors.newCachedThreadPool();
     private boolean firstNight = true;
+    private int toFire = -1;
+    private boolean response = false;
     @Override
     public void run() {
         Scanner scanner = new Scanner(System.in);
@@ -59,6 +61,42 @@ public class Client implements Runnable , Serializable {
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Is response boolean.
+     *
+     * @return the boolean
+     */
+    public boolean isResponse() {
+        return response;
+    }
+
+    /**
+     * Sets response.
+     *
+     * @param response the response
+     */
+    public void setResponse(boolean response) {
+        this.response = response;
+    }
+
+    /**
+     * Sets to fire.
+     *
+     * @param toFire the to fire
+     */
+    public void setToFire(int toFire) {
+        this.toFire = toFire;
+    }
+
+    /**
+     * Gets to fire.
+     *
+     * @return the to fire
+     */
+    public int getToFire() {
+        return toFire;
     }
 
     /**

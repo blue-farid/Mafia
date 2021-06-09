@@ -1,6 +1,7 @@
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.io.OptionalDataException;
 import java.net.SocketException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -23,7 +24,7 @@ public class ClientReader implements Runnable , Reader {
     public Object reader() {
         try {
             return client.getObjectInputStream().readObject();
-        } catch (EOFException | SocketException e) {
+        } catch (EOFException | SocketException | OptionalDataException e) {
             System.exit(0);
         }
         catch (IOException | ClassNotFoundException e) {
@@ -56,6 +57,21 @@ public class ClientReader implements Runnable , Reader {
                 client.getObjectOutputStream().writeObject("BreakTheBlock");
             } catch (IOException e) {
                 e.printStackTrace();
+            }
+        } else if (command.equals("CheckResponse")) {
+            if (!client.isResponse()) {
+                int a = client.getToFire();
+                client.setToFire(++a);
+            } else {
+                client.setToFire(0);
+            }
+            if (client.getToFire() > 2) {
+                try {
+                    System.out.println("you fired of the game because of the no response law.");
+                    client.getObjectOutputStream().writeObject("exit");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
         else {

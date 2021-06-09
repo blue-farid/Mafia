@@ -6,7 +6,6 @@ import java.util.Scanner;
  */
 public class Writer implements Runnable{
     private Client client;
-
     /**
      * Instantiates a new Writer.
      *
@@ -21,6 +20,7 @@ public class Writer implements Runnable{
         Scanner scanner = new Scanner(System.in);
         while (true) {
             String text = scanner.nextLine();
+            client.setResponse(true);
             try {
                 client.getObjectOutputStream().writeObject(text);
             } catch (IOException e) {

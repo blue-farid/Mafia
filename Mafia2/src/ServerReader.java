@@ -23,8 +23,14 @@ public class ServerReader implements Reader , Runnable {
         try {
             return newPlayerHandler.getObjectInputStream().readObject();
         } catch (IOException e) {
-            System.out.println(newPlayerHandler.getPlayer().getName() + " left the game!");
             Network.sendToAll(newPlayerHandler.getPlayer().getName() + " left the game!");
+            God.getGod().checkForGameOver();
+            System.out.println(newPlayerHandler.getPlayer().getName() + " left the game!");
+            try {
+                Network.exit(newPlayerHandler);
+            } catch (IOException ioException) {
+
+            }
             Thread.currentThread().stop();
             return new Object();
         } catch (ClassNotFoundException e) {
