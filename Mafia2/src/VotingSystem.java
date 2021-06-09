@@ -120,6 +120,8 @@ public class VotingSystem {
      * Start.
      */
     public void start() {
+        timesUp = false;
+        VotingSystem.getVotingSystem().setNumberOfPlayersWhoVote(0);
         fillPlayers();
         resetVotes();
         ExecutorService pool = Executors.newCachedThreadPool();
@@ -133,6 +135,9 @@ public class VotingSystem {
             e.printStackTrace();
         }
         tiktokThread.start();
+        System.out.println(timesUp);
+        System.out.println(VotingSystem.getVotingSystem().getNumberOfPlayersWhoVote());
+        System.out.println(God.getGod().getPlayers().size());
         while (!timesUp && VotingSystem.getVotingSystem().getNumberOfPlayersWhoVote() < God.getGod().getPlayers().size()) {
             try {
                 Thread.sleep(1500);
@@ -140,8 +145,6 @@ public class VotingSystem {
                 e.printStackTrace();
             }
         }
-        timesUp = false;
-        VotingSystem.getVotingSystem().setNumberOfPlayersWhoVote(0);
         tiktokThread.interrupt();
         Network.sendToAll("Voting Done!");
         Player pleader = killPLeader();
@@ -295,7 +298,7 @@ public class VotingSystem {
             for (int i = 0; i < time; i++) {
                 Network.sendToAll((time - i) + " minutes remaining...");
                 try {
-                    Thread.sleep(60000);
+                    Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     return;
                 }

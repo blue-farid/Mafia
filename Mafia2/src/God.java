@@ -107,6 +107,8 @@ public class God implements Serializable {
             ExecutorCompletionService completionService = new ExecutorCompletionService<>(serverReader);
             while (true) {
                 Network.readyForReading(serverReader);
+//                Network.sendToAll("CheckResponse");
+//                Thread.sleep(2000);
                 if (God.getGod().isFirstNight()) {
                     getGod().wakeUpCommands();
                     Thread.sleep(5000);
