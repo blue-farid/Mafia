@@ -6,32 +6,59 @@ import java.util.LinkedList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * The type Voting system.
+ */
 public class VotingSystem {
     private static VotingSystem votingSystem;
     private LinkedList<Player> players;
     private LinkedList<Player> pleaders;
     private int minimumOfVotes;
     private int numberOfPlayersWhoVote = 0;
+    /**
+     * The Times up.
+     */
     boolean timesUp = false;
     private VotingSystem() {
         players = new LinkedList<>();
         pleaders = new LinkedList<>();
         minimumOfVotes = (int) Math.floor((players.size() - 1) / 2);
     }
+
+    /**
+     * Add vote.
+     *
+     * @param player the player
+     */
     public void addVote(Player player) {
         player.addVote();
     }
+
+    /**
+     * Gets voting system.
+     *
+     * @return the voting system
+     */
     public static VotingSystem getVotingSystem() {
         if (votingSystem == null) {
             votingSystem = new VotingSystem();
         }
         return votingSystem;
     }
+
+    /**
+     * Sort players.
+     */
     public void sortPlayers() {
         Collections.sort(players);
         Collections.reverse(players);
     }
 
+    /**
+     * Kill p leader player.
+     *
+     * @return the player
+     */
     public Player killPLeader() {
         sortPlayers();
         findPleaders();
@@ -41,6 +68,10 @@ public class VotingSystem {
         }
         return null;
     }
+
+    /**
+     * Find pleaders.
+     */
     public void findPleaders() {
         pleaders.clear();
         int maxOfVotes = players.get(0).getVotes();
@@ -58,19 +89,36 @@ public class VotingSystem {
         }
     }
 
+    /**
+     * Reset votes.
+     */
     public void resetVotes() {
         for (Player player: players) {
             player.resetVotes();
         }
     }
+
+    /**
+     * Sets number of players who vote.
+     *
+     * @param numberOfPlayersWhoVote the number of players who vote
+     */
     public void setNumberOfPlayersWhoVote(int numberOfPlayersWhoVote) {
         this.numberOfPlayersWhoVote = numberOfPlayersWhoVote;
     }
 
+    /**
+     * Gets number of players who vote.
+     *
+     * @return the number of players who vote
+     */
     public Integer getNumberOfPlayersWhoVote() {
         return numberOfPlayersWhoVote;
     }
 
+    /**
+     * Start.
+     */
     public void start() {
         fillPlayers();
         resetVotes();
@@ -99,6 +147,7 @@ public class VotingSystem {
         Player pleader = killPLeader();
         if (pleader != null) {
             if (players.contains(new Mayor(""))) {
+                boolean mayorAct = false;
                 Network.sendToAll("waiting for the mayor...");
                 Mayor mayor = null;
                 for (Player player: players) {
@@ -115,6 +164,7 @@ public class VotingSystem {
                         String answer = (String) in.readObject();
                         System.out.println(answer);
                         if (answer.equals("yes")) {
+                            mayorAct = true;
                             mayor.save(pleader);
                         } else if (answer.equals("no")) {
                         } else {
@@ -127,25 +177,47 @@ public class VotingSystem {
                         e.printStackTrace();
                     }
                 } while (state);
-                if (pleader.isAlive()) {
+                if (mayorAct) {
                     Network.sendToAll("The Mayor Canceled The Vote!");
+                } else {
+                    if (pleader instanceof DieHard) {
+                        DieHard dieHard = (DieHard) pleader;
+                        if (dieHard.isExtraLife()) {
+                            Network.sendToAll(pleader.getName() + " is die-hard! so he has not been executed!");
+                        }
+                    } else {
+                        Network.sendToAll(pleader.getName() + " has been executed!");
+                        God.getGod().getNewDeads().add(pleader);
+                    }
+                }
+            } else {
+                if (pleader instanceof DieHard) {
+                    DieHard dieHard = (DieHard) pleader;
+                    if (dieHard.isExtraLife()) {
+                        Network.sendToAll(pleader.getName() + " is die-hard! so he has not been executed!");
+                    }
                 } else {
                     Network.sendToAll(pleader.getName() + " has been executed!");
                     God.getGod().getNewDeads().add(pleader);
                 }
-            } else {
-                Network.sendToAll(pleader.getName() + " has been executed!");
-                God.getGod().getNewDeads().add(pleader);
             }
         }
     }
 
+    /**
+     * Fill players.
+     */
     public void fillPlayers() {
         players = God.getGod().getPlayers();
     }
     private class ClientHandler implements Runnable{
         private NewPlayerHandler newPlayerHandler;
 
+        /**
+         * Instantiates a new Client handler.
+         *
+         * @param newPlayerHandler the new player handler
+         */
         public ClientHandler(NewPlayerHandler newPlayerHandler) {
             this.newPlayerHandler = newPlayerHandler;
         }
@@ -200,6 +272,11 @@ public class VotingSystem {
     private class TikTok implements Runnable{
         private int time;
 
+        /**
+         * Instantiates a new Tik tok.
+         *
+         * @param time the time
+         */
         public TikTok(int time) {
             this.time = time;
         }
@@ -208,6 +285,12 @@ public class VotingSystem {
         public void run() {
             tiktok(time);
         }
+
+        /**
+         * Tiktok.
+         *
+         * @param time the time
+         */
         public void tiktok(int time) {
             for (int i = 0; i < time; i++) {
                 Network.sendToAll((time - i) + " minutes remaining...");

@@ -1,9 +1,17 @@
 import java.io.IOException;
 import java.util.Scanner;
 
+/**
+ * The type Writer.
+ */
 public class Writer implements Runnable{
     private Client client;
 
+    /**
+     * Instantiates a new Writer.
+     *
+     * @param client the client
+     */
     public Writer(Client client) {
         this.client = client;
     }

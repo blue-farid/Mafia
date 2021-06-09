@@ -4,6 +4,9 @@ import java.net.Socket;
 import java.util.*;
 import java.util.concurrent.*;
 
+/**
+ * The type God.
+ */
 public class God implements Serializable {
     private static God god;
     private static Socket connection;
@@ -23,16 +26,32 @@ public class God implements Serializable {
 
     private God(){}
 
+    /**
+     * Gets god.
+     *
+     * @return the god
+     */
     public static God getGod() {
         if (god == null) {
             god = new God();
         }
         return god;
     }
+
+    /**
+     * Sets god.
+     *
+     * @param god the god
+     */
     public void setGod(God god) {
         this.god = god;
     }
 
+    /**
+     * The entry point of application.
+     *
+     * @param args the input arguments
+     */
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         System.out.println("*****************");
@@ -108,19 +127,43 @@ public class God implements Serializable {
             e.printStackTrace();
         }
     }
+
+    /**
+     * Add new player handler.
+     *
+     * @param newPlayerHandler the new player handler
+     */
     public void addNewPlayerHandler(NewPlayerHandler newPlayerHandler) {
         Network.newPlayerHandlers.add(newPlayerHandler);
     }
 
+    /**
+     * Add player boolean.
+     *
+     * @param player the player
+     * @return the boolean
+     */
     public boolean addPlayer(Player player) {
         return players.add(player);
     }
+
+    /**
+     * Remove player.
+     *
+     * @param player the player
+     */
     public void removePlayer(Player player) {
         if (!deads.contains(player))
             deads.add(player);
         mafias.remove(player);
         citizens.remove(player);
     }
+
+    /**
+     * Rand role player.
+     *
+     * @return the player
+     */
     public Player randRole() {
         Random random = new Random();
         int randIndex = random.nextInt(roles.size());
@@ -128,6 +171,10 @@ public class God implements Serializable {
         roles.remove(randIndex);
         return role;
     }
+
+    /**
+     * Create roles.
+     */
     public void createRoles() {
         // that for 10 players.
         roles.clear();
@@ -142,6 +189,10 @@ public class God implements Serializable {
         roles.add(new Psychologist(""));
         roles.add(new Sniper("" , numberOfPlayers));
     }
+
+    /**
+     * Fill mafias.
+     */
     public void fillMafias() {
         for (Player player: players) {
             if (player instanceof Mafia) {
@@ -150,6 +201,10 @@ public class God implements Serializable {
             }
         }
     }
+
+    /**
+     * Fill citizens.
+     */
     public void fillCitizens() {
         for (Player player: players) {
             if (player instanceof Citizen) {
@@ -159,6 +214,9 @@ public class God implements Serializable {
         }
     }
 
+    /**
+     * Some players are not ready.
+     */
     public void somePlayersAreNotReady() {
         if (God.getGod().getPlayers().size() < numberOfPlayers) {
 //            System.out.println("some players are not ready yet.");
@@ -172,6 +230,12 @@ public class God implements Serializable {
         }
     }
 
+    /**
+     * Player to client new player handler.
+     *
+     * @param player the player
+     * @return the new player handler
+     */
     public NewPlayerHandler playerToClient(Player player) {
         for (NewPlayerHandler newPlayerHandler: Network.newPlayerHandlers) {
             if (player.getName().equals(newPlayerHandler.getPlayer().getName())) {
@@ -180,6 +244,14 @@ public class God implements Serializable {
         }
         return null;
     }
+
+    /**
+     * Command line.
+     *
+     * @param command the command
+     * @param player1 the player 1
+     * @throws IOException the io exception
+     */
     public void commandLine(Object command , Player player1) throws IOException {
         if (God.getGod().getPlayers().contains(player1)) {
             Player player = getGod().typeToObj(player1);
@@ -192,6 +264,12 @@ public class God implements Serializable {
         } else
             return;
     }
+
+    /**
+     * Wake up commands.
+     *
+     * @throws IOException the io exception
+     */
     public void wakeUpCommands() throws IOException {
         String command = "WakeUp";
         wakeUpMafias(command);
@@ -209,11 +287,23 @@ public class God implements Serializable {
             God.getGod().setFirstNight(false);
         }
     }
+
+    /**
+     * Type to obj player.
+     *
+     * @param player the player
+     * @return the player
+     */
     public Player typeToObj(Player player) {
         int index = players.indexOf(player);
         return players.get(index);
     }
 
+    /**
+     * Wake up mafias.
+     *
+     * @param command the command
+     */
     public void wakeUpMafias(String command) {
         for (Mafia mafia : getMafias()) {
             try {
@@ -227,6 +317,10 @@ public class God implements Serializable {
         }
 
     }
+
+    /**
+     * Wait for.
+     */
     public void waitFor() {
         setWaiting(true);
         while (getGod().isWaiting()) {
@@ -238,16 +332,31 @@ public class God implements Serializable {
         }
     }
 
+    /**
+     * Remove deads.
+     */
     public void removeDeads() {
         Iterator itr = players.iterator();
         while (itr.hasNext()) {
             Player player = (Player) itr.next();
             if (!player.isAlive()) {
+                if (player instanceof DieHard) {
+                    DieHard dieHard = (DieHard) player;
+                    if (dieHard.isExtraLife()) {
+                        dieHard.setExtraLife(false);
+                        dieHard.setAlive(true);
+                        continue;
+                    }
+                }
                 removePlayer(player);
                 itr.remove();
             }
         }
     }
+
+    /**
+     * Send inqury to all.
+     */
     public void sendInquryToAll() {
         if (God.getGod().isInqury()) {
             Network.sendToAll("Die-Hard Inqury:");
@@ -257,6 +366,10 @@ public class God implements Serializable {
             }
         }
     }
+
+    /**
+     * Send final message to new deads.
+     */
     public void sendFinalMessageToNewDeads() {
         for (Player dead: newDeads) {
             Network.sendToPlayer("You Dead!\nYou can leave the game by type 'exit' " +
@@ -264,6 +377,10 @@ public class God implements Serializable {
         }
         newDeads.clear();
     }
+
+    /**
+     * Send night events to all.
+     */
     public void sendNightEventsToAll() {
         boolean noOne = true;
         Network.sendToAll("In Last Night we lost: ");
@@ -284,6 +401,10 @@ public class God implements Serializable {
             }
         }
     }
+
+    /**
+     * Check for game over.
+     */
     public void checkForGameOver() {
         if (God.getGod().getMafias().size() >= God.getGod().getCitizens().size()) {
             Network.sendToAll("Mafia Wins!\nGame Over!");
@@ -296,6 +417,10 @@ public class God implements Serializable {
             System.exit(0);
         }
     }
+
+    /**
+     * Sort mafias.
+     */
     public void sortMafias() {
         GodFather godFather = null;
         LecterDoc lecterDoc = null;
@@ -320,71 +445,157 @@ public class God implements Serializable {
             mafias.add(godFather);
         }
     }
+
+    /**
+     * Gets deads.
+     *
+     * @return the deads
+     */
     public LinkedList<Player> getDeads() {
         return deads;
     }
 
 
+    /**
+     * Gets mafias.
+     *
+     * @return the mafias
+     */
     public LinkedList<Mafia> getMafias() {
         return mafias;
     }
 
+    /**
+     * Is waiting boolean.
+     *
+     * @return the boolean
+     */
     public boolean isWaiting() {
         return waiting;
     }
 
+    /**
+     * Sets waiting.
+     *
+     * @param waiting the waiting
+     */
     public void setWaiting(boolean waiting) {
         this.waiting = waiting;
     }
 
+    /**
+     * Gets citizens.
+     *
+     * @return the citizens
+     */
     public LinkedList<Citizen> getCitizens() {
         return citizens;
     }
 
+    /**
+     * Gets new deads.
+     *
+     * @return the new deads
+     */
     public LinkedList<Player> getNewDeads() {
         return newDeads;
     }
 
+    /**
+     * Sets inqury.
+     *
+     * @param inqury the inqury
+     */
     public void setInqury(boolean inqury) {
         this.inqury = inqury;
     }
 
+    /**
+     * Is inqury boolean.
+     *
+     * @return the boolean
+     */
     public boolean isInqury() {
         return inqury;
     }
 
+    /**
+     * Gets number of players.
+     *
+     * @return the number of players
+     */
     public int getNumberOfPlayers() {
         return numberOfPlayers;
     }
 
+    /**
+     * Is game over boolean.
+     *
+     * @return the boolean
+     */
     public boolean isGameOver() {
         return gameOver;
     }
 
+    /**
+     * Sets game over.
+     *
+     * @param gameOver the game over
+     */
     public void setGameOver(boolean gameOver) {
         this.gameOver = gameOver;
     }
 
+    /**
+     * Sets number of players.
+     *
+     * @param numberOfPlayers the number of players
+     */
     public void setNumberOfPlayers(int numberOfPlayers) {
         this.numberOfPlayers = numberOfPlayers;
     }
 
+    /**
+     * Gets players.
+     *
+     * @return the players
+     */
     public LinkedList<Player> getPlayers() {
         return players;
     }
 
+    /**
+     * Gets number of mafias who votes.
+     *
+     * @return the number of mafias who votes
+     */
     public Integer getNumberOfMafiasWhoVotes() {
         return numberOfMafiasWhoVotes;
     }
 
+    /**
+     * Sets number of mafias who votes.
+     *
+     * @param numberOfMafiasWhoVotes the number of mafias who votes
+     */
     public void setNumberOfMafiasWhoVotes(Integer numberOfMafiasWhoVotes) {
         this.numberOfMafiasWhoVotes = numberOfMafiasWhoVotes;
     }
 
+    /**
+     * Is first night boolean.
+     *
+     * @return the boolean
+     */
     public boolean isFirstNight() {
         return firstNight;
     }
 
+    /**
+     * Sets first night.
+     *
+     * @param firstNight the first night
+     */
     public void setFirstNight(boolean firstNight) {
         this.firstNight = firstNight;
     }
@@ -402,6 +613,9 @@ public class God implements Serializable {
         return Objects.hash();
     }
 
+    /**
+     * Clear The Screen.
+     */
     public static void cls()
     {
         try {
@@ -415,6 +629,9 @@ public class God implements Serializable {
     }
 }
 
+/**
+ * The type New player handler.
+ */
 class NewPlayerHandler extends Thread implements Serializable{
     private Socket socket;
     private ObjectInputStream in;
@@ -423,6 +640,12 @@ class NewPlayerHandler extends Thread implements Serializable{
 //    private OutputStream outputStream;
     private Player player;
     private String name;
+
+    /**
+     * Instantiates a new New player handler.
+     *
+     * @param socket the socket
+     */
     public NewPlayerHandler(Socket socket) {
         this.socket = socket;
     }
@@ -451,18 +674,38 @@ class NewPlayerHandler extends Thread implements Serializable{
         }
     }
 
+    /**
+     * Gets player.
+     *
+     * @return the player
+     */
     public Player getPlayer() {
         return player;
     }
 
+    /**
+     * Gets object input stream.
+     *
+     * @return the object input stream
+     */
     public ObjectInputStream getObjectInputStream() {
         return in;
     }
 
+    /**
+     * Gets object output stream.
+     *
+     * @return the object output stream
+     */
     public ObjectOutputStream getObjectOutputStream() {
         return out;
     }
 
+    /**
+     * Gets socket.
+     *
+     * @return the socket
+     */
     public Socket getSocket() {
         return socket;
     }
