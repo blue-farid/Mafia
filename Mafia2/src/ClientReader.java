@@ -106,10 +106,16 @@ public class ClientReader implements Runnable , Reader {
                     }
                 } else if (player instanceof Mayor) {
                     //find doc.
-                    System.out.println(God.getGod().typeToObj(new CityDoc("")));
+                    CityDoc cityDoc = (CityDoc) God.getGod().typeToObj(new CityDoc(""));
+                    if (cityDoc != null) {
+                        System.out.println(cityDoc);
+                    }
                     System.out.println(player);
                 } else if (player instanceof CityDoc) {
-                    System.out.println(God.getGod().typeToObj(new Mayor("")));
+                    Mayor mayor = (Mayor) God.getGod().typeToObj(new Mayor(""));
+                    if (mayor != null) {
+                        System.out.println(mayor);
+                    }
                     System.out.println(player);
                 } else {
                     System.out.println(player);
