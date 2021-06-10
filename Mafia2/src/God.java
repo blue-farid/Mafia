@@ -107,8 +107,8 @@ public class God implements Serializable {
             ExecutorCompletionService completionService = new ExecutorCompletionService<>(serverReader);
             while (true) {
                 Network.readyForReading(serverReader);
-//                Network.sendToAll("CheckResponse");
-//                Thread.sleep(2000);
+                Network.sendToAll("CheckResponse");
+                Thread.sleep(2000);
                 if (God.getGod().isFirstNight()) {
                     getGod().wakeUpCommands();
                     Thread.sleep(5000);
@@ -209,20 +209,26 @@ public class God implements Serializable {
         if (numberOfPlayers < 9)
             roles.remove(new Mafia(""));
         if (numberOfPlayers < 8)
-            roles.remove(new Psychologist(""));
-        if (numberOfPlayers < 7)
             roles.remove(new Mayor(""));
-        if (numberOfPlayers < 6)
+        if (numberOfPlayers < 7)
+            roles.remove(new Psychologist(""));
+        if (numberOfPlayers < 6) {
             roles.remove(new LecterDoc(""));
             roles.remove(new Detective("")); /* detective doesn't help
                                                     in the game we just 1 mafia
                                                     and that is GodFather!
-                                                    */
-            roles.add(new Mayor(""));
+                                                   */
+            roles.remove(new Sniper("",numberOfPlayers)); /* sniper doesn't have
+                                                                any bullet when in the
+                                                                game is just 1 mafia.
+                                                                */
+            roles.add(new Citizen(""));
+            roles.add(new Psychologist(""));
+        }
         if (numberOfPlayers < 5)
             roles.remove(new DieHard(""));
         if (numberOfPlayers < 4)
-            roles.remove(new Sniper("",numberOfPlayers));
+            roles.remove(new Psychologist(""));
     }
 
     /**

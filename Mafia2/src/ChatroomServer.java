@@ -29,7 +29,7 @@ public class ChatroomServer {
         for (NewPlayerHandler newPlayerHandler : clients) {
             pool.execute(new ClientHandler(newPlayerHandler));
         }
-        Thread tiktokThread = new Thread(new TikTok(2));
+        Thread tiktokThread = new Thread(new TikTok(3));
         tiktokThread.start();
         while (!timesUp && ChatroomServer.getChatroomServer().getNumberOfPlayersWhoReady() < God.getGod().getPlayers().size()) {
             try {
@@ -121,7 +121,7 @@ public class ChatroomServer {
             for (int i = 0; i < time; i++) {
                 Network.sendToAll(((time - i) + " minute remaining..."));
                 try {
-                    Thread.sleep(5000);
+                    Thread.sleep(60000);
                 } catch (InterruptedException e) {
                     return;
                 }
