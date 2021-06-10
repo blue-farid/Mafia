@@ -128,16 +128,13 @@ public class VotingSystem {
         for (Player player: players) {
             pool.execute(new ClientHandler(God.getGod().playerToClient(player)));
         }
-        Thread tiktokThread = new Thread(new TikTok(5));
+        Thread tiktokThread = new Thread(new TikTok(3));
         try {
             Thread.sleep(2000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         tiktokThread.start();
-        System.out.println(timesUp);
-        System.out.println(VotingSystem.getVotingSystem().getNumberOfPlayersWhoVote());
-        System.out.println(God.getGod().getPlayers().size());
         while (!timesUp && VotingSystem.getVotingSystem().getNumberOfPlayersWhoVote() < God.getGod().getPlayers().size()) {
             try {
                 Thread.sleep(1500);
@@ -298,7 +295,7 @@ public class VotingSystem {
             for (int i = 0; i < time; i++) {
                 Network.sendToAll((time - i) + " minutes remaining...");
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(60000);
                 } catch (InterruptedException e) {
                     return;
                 }
