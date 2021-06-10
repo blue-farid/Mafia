@@ -25,7 +25,7 @@ public class ClientReader implements Runnable , Reader {
             System.exit(0);
         }
         catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         }
         return null;
     }
@@ -40,21 +40,21 @@ public class ClientReader implements Runnable , Reader {
                 try {
                     client.getObjectOutputStream().writeObject(command);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    System.out.println(e.getMessage());
                 }
                 System.out.println(command);
             } else if (command.equals("Day!")) {
                 try {
                     client.getObjectOutputStream().writeObject(command);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    System.out.println(e.getMessage());
                 }
                 System.out.println(command);
             } else if (command.equals("BreakTheBlock")) {
                 try {
                     client.getObjectOutputStream().writeObject("BreakTheBlock");
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    System.out.println(e.getMessage());
                 }
             } else if (command.equals("CheckResponse")) {
                 if (!client.isResponse()) {
@@ -68,7 +68,7 @@ public class ClientReader implements Runnable , Reader {
                         System.out.println("you fired of the game because of the no response law.");
                         client.getObjectOutputStream().writeObject("exit");
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        System.out.println(e.getMessage());
                     }
                 }
             } else {
