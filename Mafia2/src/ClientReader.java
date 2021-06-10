@@ -1,7 +1,4 @@
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.OptionalDataException;
+import java.io.*;
 import java.net.SocketException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -28,54 +25,57 @@ public class ClientReader implements Runnable , Reader {
             System.exit(0);
         }
         catch (IOException | ClassNotFoundException e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         }
         return null;
     }
 
     @Override
-    public void commandLine(Object command) throws NullPointerException {
-        ExecutorService pool = Executors.newCachedThreadPool();
-        if (command.equals("WakeUp")) {
-            pool.execute(new OpenEyes(client));
-        } else if(command.equals("Chatroom is closing...")) {
-            try {
-                client.getObjectOutputStream().writeObject(command);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            System.out.println(command);
-        } else if (command.equals("Day!")) {
-            try {
-                client.getObjectOutputStream().writeObject(command);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            System.out.println(command);
-        } else if (command.equals("BreakTheBlock")) {
-            try {
-                client.getObjectOutputStream().writeObject("BreakTheBlock");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } else if (command.equals("CheckResponse")) {
-            if (!client.isResponse()) {
-                int a = client.getToFire();
-                client.setToFire(++a);
-            } else {
-                client.setToFire(0);
-            }
-            if (client.getToFire() > 2) {
+    public void commandLine(Object command) throws StreamCorruptedException {
+        try {
+            ExecutorService pool = Executors.newCachedThreadPool();
+            if (command.equals("WakeUp")) {
+                pool.execute(new OpenEyes(client));
+            } else if (command.equals("Chatroom is closing...")) {
                 try {
-                    System.out.println("you fired of the game because of the no response law.");
-                    client.getObjectOutputStream().writeObject("exit");
+                    client.getObjectOutputStream().writeObject(command);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    System.out.println(e.getMessage());
                 }
+                System.out.println(command);
+            } else if (command.equals("Day!")) {
+                try {
+                    client.getObjectOutputStream().writeObject(command);
+                } catch (IOException e) {
+                    System.out.println(e.getMessage());
+                }
+                System.out.println(command);
+            } else if (command.equals("BreakTheBlock")) {
+                try {
+                    client.getObjectOutputStream().writeObject("BreakTheBlock");
+                } catch (IOException e) {
+                    System.out.println(e.getMessage());
+                }
+            } else if (command.equals("CheckResponse")) {
+                if (!client.isResponse()) {
+                    int a = client.getToFire();
+                    client.setToFire(++a);
+                } else {
+                    client.setToFire(0);
+                }
+                if (client.getToFire() > 2) {
+                    try {
+                        System.out.println("you fired of the game because of the no response law.");
+                        client.getObjectOutputStream().writeObject("exit");
+                    } catch (IOException e) {
+                        System.out.println(e.getMessage());
+                    }
+                }
+            } else {
+                System.out.println(command);
             }
-        }
-        else {
-            System.out.println(command);
+        } catch (NullPointerException e) {
+
         }
     }
 
@@ -83,7 +83,10 @@ public class ClientReader implements Runnable , Reader {
     @Override
     public void run() {
         while (true) {
-            commandLine(reader());
+            try {
+                commandLine(reader());
+            } catch (StreamCorruptedException e) {
+            }
         }
     }
 
