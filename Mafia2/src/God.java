@@ -115,11 +115,13 @@ public class God implements Serializable {
                 } else {
                     Network.sendToAll("Night!");
                     getGod().wakeUpCommands();
-                    getGod().sendNightEventsToAll();
                     getGod().removeDeads();
-                    getGod().sendInquryToAll();
+                    getGod().sendNightEventsToAll();
                     getGod().sendFinalMessageToNewDeads();
+                    getGod().sendInquryToAll();
                     getGod().checkForGameOver();
+                    getGod().sendAlivePlayersToAll();
+
                 }
                 Network.sendToAll("Day!");
                 Future future;
@@ -393,6 +395,8 @@ public class God implements Serializable {
                         continue;
                     }
                 }
+                if (!newDeads.contains(player))
+                    newDeads.add(player);
                 removePlayer(player);
                 itr.remove();
             }
@@ -412,6 +416,17 @@ public class God implements Serializable {
         }
     }
 
+    public void sendAlivePlayersToAll() {
+        int i = 1;
+        String res = "";
+        for (Player player: players) {
+            if (player.isAlive()) {
+                res += i + "- " + player.getName() + "\n";
+                i++;
+            }
+        }
+        Network.sendToAll("Alive Players:\n" + res);
+    }
     /**
      * Send final message to new deads.
      */
@@ -429,12 +444,9 @@ public class God implements Serializable {
     public void sendNightEventsToAll() {
         boolean noOne = true;
         Network.sendToAll("In Last Night we lost: ");
-        for (Player player: players) {
-            if (!player.isAlive()) {
-                newDeads.add(player);
-                noOne = false;
-                Network.sendToAll(player.getName());
-            }
+        for (Player player: newDeads) {
+            noOne = false;
+            Network.sendToAll(player.getName());
         }
         if (noOne) {
             Network.sendToAll("No One!");

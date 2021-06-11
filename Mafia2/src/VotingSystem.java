@@ -148,6 +148,7 @@ public class VotingSystem {
         if (pleader != null) {
             if (players.contains(new Mayor(""))) {
                 boolean mayorAct = false;
+                Network.sendToAll(pleader.getName() + " will be executing!");
                 Network.sendToAll("waiting for the mayor...");
                 Mayor mayor = null;
                 for (Player player: players) {
@@ -162,7 +163,6 @@ public class VotingSystem {
                 do {
                     try {
                         String answer = (String) in.readObject();
-                        System.out.println(answer);
                         if (answer.equals("yes")) {
                             mayorAct = true;
                             mayor.save(pleader);
