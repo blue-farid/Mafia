@@ -10,6 +10,8 @@ public class ChatroomServer {
 
     private static ChatroomServer chatroomServer;
     private LinkedList<NewPlayerHandler> clients = new LinkedList<>();
+    private FileUtils fileUtils = new FileUtils();
+    private boolean firstRun = true;
     private boolean timesUp = false;
     private int numberOfPlayersWhoReady = 0;
 
@@ -25,6 +27,8 @@ public class ChatroomServer {
 
     public void start() throws IOException {
         ChatroomServer.getChatroomServer().fillClients();
+        timesUp = false;
+        ChatroomServer.getChatroomServer().setNumberOfPlayersWhoReady(0);
         ExecutorService pool = Executors.newCachedThreadPool();
         for (NewPlayerHandler newPlayerHandler : clients) {
             pool.execute(new ClientHandler(newPlayerHandler));
@@ -38,8 +42,6 @@ public class ChatroomServer {
                 e.printStackTrace();
             }
         }
-        timesUp = false;
-        ChatroomServer.getChatroomServer().setNumberOfPlayersWhoReady(0);
         tiktokThread.interrupt();
         Network.sendToAll("Chatroom is closing...");
         return;
@@ -76,7 +78,7 @@ public class ChatroomServer {
                 try {
                     String text = (String) in.readObject();
                     Player player = newPlayerHandler.getPlayer();
-                    if (text.equals("Ready") && player.isAlive()) {
+                    if (text.equals("ready") && player.isAlive()) {
                         if (ready) {
                             Network.sendToAll(player.getName() + " is ready to vote!");
                             ready = false;
@@ -92,9 +94,26 @@ public class ChatroomServer {
                     } else if (text.equals("exit")) {
                         Network.exit(newPlayerHandler);
                     }
+                    else if (text.equals("history")) {
+                        if (firstRun) {
+                            Network.sendToPlayer("Nothing to show!",player);
+                        }
+                        else {
+                            String messages = fileUtils.loadMessages("messages.txt");
+                            Network.sendToPlayer(messages, player);
+                        }
+                    }
+                    else if (text.equals("BreakTheBlock"));
                     else if (!player.isMute() && player.isAlive()) {
-                        Network.sendToAll(player.getName() + ": " + text);
-                    } else if (text.equals("BreakTheBlock"));
+                        String res = player.getName() + ": " + text;
+                        Network.sendToAll(res);
+                        File file = new File("messages.txt");
+                        if (firstRun && file.exists()) {
+                            file.delete();
+                            firstRun = false;
+                        }
+                        fileUtils.saveMessage(res,file);
+                    }
                     else {
                         out.writeObject("You do not allow to chat!");
                     }
@@ -106,7 +125,7 @@ public class ChatroomServer {
             }
         }
     }
-    private class TikTok implements Runnable{
+    private class TikTok implements Runnable {
         private int time;
 
         public TikTok(int time) {
